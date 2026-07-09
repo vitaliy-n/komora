@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useEffect } from 'react'
 import { Layout } from './components/layout/Layout'
+import { LandingPage } from './pages/LandingPage'
+import { AdminLoginPage } from './pages/AdminLoginPage'
+import { AdminDashboardPage } from './pages/AdminDashboardPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { CanningListPage } from './pages/CanningListPage'
 import { CanningDetailPage } from './pages/CanningDetailPage'
@@ -24,19 +27,22 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/admin" element={<AdminLoginPage />} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route element={<Layout />}>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/cannings" element={<CanningListPage />} />
-          <Route path="/cannings/new" element={<CanningFormPage />} />
-          <Route path="/cannings/:id" element={<CanningDetailPage />} />
-          <Route path="/cannings/:id/edit" element={<CanningFormPage />} />
-          <Route path="/recipes" element={<RecipesPage />} />
-          <Route path="/recipes/:id" element={<RecipeDetailPage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/products/:id" element={<ProductDetailPage />} />
-          <Route path="/inventory" element={<InventoryPage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/app" element={<DashboardPage />} />
+          <Route path="/app/cannings" element={<CanningListPage />} />
+          <Route path="/app/cannings/new" element={<CanningFormPage />} />
+          <Route path="/app/cannings/:id" element={<CanningDetailPage />} />
+          <Route path="/app/cannings/:id/edit" element={<CanningFormPage />} />
+          <Route path="/app/recipes" element={<RecipesPage />} />
+          <Route path="/app/recipes/:id" element={<RecipeDetailPage />} />
+          <Route path="/app/products" element={<ProductsPage />} />
+          <Route path="/app/products/:id" element={<ProductDetailPage />} />
+          <Route path="/app/inventory" element={<InventoryPage />} />
+          <Route path="/app/calendar" element={<CalendarPage />} />
+          <Route path="/app/settings" element={<SettingsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -65,7 +65,7 @@ export function DashboardPage() {
           <h1 className="page-title">🫙 Комора</h1>
           <p className="text-stone-500 text-sm mt-1">Ваші домашні закрутки та запаси</p>
         </div>
-        <Link to="/cannings/new" className="btn-primary flex items-center gap-2">
+        <Link to="/app/cannings/new" className="btn-primary flex items-center gap-2">
           <Plus size={18} />
           <span className="hidden sm:inline">Нова закрутка</span>
         </Link>
@@ -164,7 +164,7 @@ export function DashboardPage() {
             <Calendar size={18} className="text-komora-600" />
             <h2 className="font-semibold">Сезонні продукти — {getMonthName(currentMonth)}</h2>
           </div>
-          <Link to="/calendar" className="text-sm font-medium text-komora-600 hover:text-komora-700">
+          <Link to="/app/calendar" className="text-sm font-medium text-komora-600 hover:text-komora-700">
             Усі →
           </Link>
         </div>
@@ -179,7 +179,7 @@ export function DashboardPage() {
                   {items.slice(0, 10).map((p) => (
                     <Link
                       key={p.id}
-                      to={`/products/${p.id}`}
+                      to={`/app/products/${p.id}`}
                       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-stone-50 hover:bg-stone-100 transition-colors"
                     >
                       <span className="text-base">{p.icon}</span>
@@ -188,7 +188,7 @@ export function DashboardPage() {
                   ))}
                   {items.length > 10 && (
                     <Link
-                      to="/calendar"
+                      to="/app/calendar"
                       className="flex items-center px-2.5 py-1.5 rounded-lg bg-komora-50 hover:bg-komora-100 transition-colors text-xs font-medium text-komora-700"
                     >
                       +{items.length - 10} ще
@@ -200,7 +200,7 @@ export function DashboardPage() {
           </div>
         ) : (
           <p className="text-sm text-stone-500">
-            Перегляньте <Link to="/calendar" className="text-komora-600 underline">сезонний календар</Link>, щоб дізнатися, що зараз найкраще консервувати.
+            Перегляньте <Link to="/app/calendar" className="text-komora-600 underline">сезонний календар</Link>, щоб дізнатися, що зараз найкраще консервувати.
           </p>
         )}
       </div>
@@ -212,13 +212,13 @@ export function DashboardPage() {
             Це ваша цифрова комора. Додавайте закрутки, ведіть інвентар продуктів, використовуйте рецепти та сезонний календар.
           </p>
           <div className="flex flex-wrap gap-2">
-            <Link to="/cannings/new" className="btn-primary text-sm flex items-center gap-1.5">
+            <Link to="/app/cannings/new" className="btn-primary text-sm flex items-center gap-1.5">
               <Plus size={16} /> Перша закрутка
             </Link>
-            <Link to="/recipes" className="btn-secondary text-sm">
+            <Link to="/app/recipes" className="btn-secondary text-sm">
               📖 Переглянути рецепти
             </Link>
-            <Link to="/products" className="btn-secondary text-sm">
+            <Link to="/app/products" className="btn-secondary text-sm">
               🥕 Каталог продуктів
             </Link>
           </div>

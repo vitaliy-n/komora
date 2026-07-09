@@ -74,7 +74,7 @@ export function ProductsPage() {
             {items.map((product) => {
               const inSeason = product.seasonMonths.includes(currentMonth)
               return (
-                <Link key={product.id} to={`/products/${product.id}`} className="card hover:shadow-md transition-shadow flex items-center gap-3">
+                <Link key={product.id} to={`/app/products/${product.id}`} className="card hover:shadow-md transition-shadow flex items-center gap-3">
                   <span className="text-2xl">{product.icon}</span>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-stone-900">{product.name}</h3>

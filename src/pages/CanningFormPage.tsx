@@ -108,10 +108,10 @@ export function CanningFormPage() {
 
     if (isEditing) {
       await updateCanning(id!, data)
-      navigate(`/cannings/${id}`)
+      navigate(`/app/cannings/${id}`)
     } else {
       const entry = await addCanning(data)
-      navigate(`/cannings/${entry.id}`)
+      navigate(`/app/cannings/${entry.id}`)
     }
   }
 

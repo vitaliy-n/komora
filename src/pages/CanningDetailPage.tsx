@@ -24,7 +24,7 @@ export function CanningDetailPage() {
     const load = async () => {
       if (!id) return
       const entry = await getCanningById(id)
-      if (!entry) { navigate('/cannings'); return }
+      if (!entry) { navigate('/app/cannings'); return }
       setCanning(entry)
       setRating(entry.rating || 0)
       setReview(entry.review || '')
@@ -53,7 +53,7 @@ export function CanningDetailPage() {
 
   const handleDelete = async () => {
     await deleteCanning(canning.id)
-    navigate('/cannings')
+    navigate('/app/cannings')
   }
 
   const handleSaveRating = async () => {
@@ -75,7 +75,7 @@ export function CanningDetailPage() {
           </h1>
           <p className="text-sm text-stone-500">{category?.name} · {formatDate(canning.date)}</p>
         </div>
-        <Link to={`/cannings/${canning.id}/edit`} className="p-2 rounded-xl hover:bg-stone-100 text-stone-600">
+        <Link to={`/app/cannings/${canning.id}/edit`} className="p-2 rounded-xl hover:bg-stone-100 text-stone-600">
           <Edit size={20} />
         </Link>
         <button onClick={() => setShowDelete(true)} className="p-2 rounded-xl hover:bg-red-50 text-red-500">
@@ -168,7 +168,7 @@ export function CanningDetailPage() {
       </div>
 
       {recipe && (
-        <Link to={`/recipes/${recipe.id}`} className="card block hover:shadow-md transition-shadow">
+        <Link to={`/app/recipes/${recipe.id}`} className="card block hover:shadow-md transition-shadow">
           <h2 className="font-semibold mb-1">📖 Рецепт</h2>
           <p className="text-sm text-komora-600">{recipe.name}</p>
         </Link>

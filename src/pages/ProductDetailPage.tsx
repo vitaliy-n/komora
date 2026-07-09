@@ -24,7 +24,7 @@ export function ProductDetailPage() {
         getRecipesByProduct(id),
         getAllProducts(),
       ])
-      if (!p) { navigate('/products'); return }
+      if (!p) { navigate('/app/products'); return }
       setProduct(p)
       setRecipes(r)
       setAllProducts(all)
@@ -168,7 +168,7 @@ export function ProductDetailPage() {
           <h2 className="font-semibold mb-3">📖 Рецепти з цим продуктом</h2>
           <div className="space-y-2">
             {recipes.map((recipe) => (
-              <Link key={recipe.id} to={`/recipes/${recipe.id}`} className="block p-2 rounded-xl hover:bg-stone-50 transition-colors">
+              <Link key={recipe.id} to={`/app/recipes/${recipe.id}`} className="block p-2 rounded-xl hover:bg-stone-50 transition-colors">
                 <span className="text-sm font-medium text-komora-600">{recipe.name}</span>
               </Link>
             ))}
@@ -176,7 +176,7 @@ export function ProductDetailPage() {
         </div>
       )}
 
-      <Link to="/inventory">
+      <Link to="/app/inventory">
         <Button variant="secondary" className="w-full">📦 Додати до запасів</Button>
       </Link>
     </div>

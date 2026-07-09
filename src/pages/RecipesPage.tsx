@@ -136,7 +136,7 @@ export function RecipesPage() {
           {filtered.map((recipe) => {
             const cat = categories.find((c) => c.id === recipe.categoryId)
             return (
-              <Link key={recipe.id} to={`/recipes/${recipe.id}`} className="card hover:shadow-md transition-shadow">
+              <Link key={recipe.id} to={`/app/recipes/${recipe.id}`} className="card hover:shadow-md transition-shadow">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{cat?.icon || '📦'}</span>
                   <div className="flex-1">

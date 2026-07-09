@@ -48,7 +48,7 @@ export function CanningListPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="page-title">Закрутки</h1>
-        <Link to="/cannings/new" className="btn-primary flex items-center gap-2">
+        <Link to="/app/cannings/new" className="btn-primary flex items-center gap-2">
           <Plus size={18} />
           <span className="hidden sm:inline">Додати</span>
         </Link>
@@ -88,7 +88,7 @@ export function CanningListPage() {
           icon="🫙"
           title="Поки немає закруток"
           description="Додайте вашу першу закрутку, щоб почати вести облік"
-          action={<Link to="/cannings/new" className="btn-primary">Додати закрутку</Link>}
+          action={<Link to="/app/cannings/new" className="btn-primary">Додати закрутку</Link>}
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
@@ -99,7 +99,7 @@ export function CanningListPage() {
             const days = canning.expiryDate ? daysUntil(canning.expiryDate) : null
 
             return (
-              <Link key={canning.id} to={`/cannings/${canning.id}`} className="card hover:shadow-md transition-shadow">
+              <Link key={canning.id} to={`/app/cannings/${canning.id}`} className="card hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{cat?.icon || '📦'}</span>

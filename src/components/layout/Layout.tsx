@@ -2,12 +2,12 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { LayoutDashboard, Cookie, BookOpen, Apple, Package, Settings, Calendar } from 'lucide-react'
 
 const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Головна' },
-  { to: '/cannings', icon: Cookie, label: 'Закрутки' },
-  { to: '/recipes', icon: BookOpen, label: 'Рецепти' },
-  { to: '/products', icon: Apple, label: 'Продукти' },
-  { to: '/inventory', icon: Package, label: 'Запаси' },
-  { to: '/calendar', icon: Calendar, label: 'Календар' },
+  { to: '/app', icon: LayoutDashboard, label: 'Головна' },
+  { to: '/app/cannings', icon: Cookie, label: 'Закрутки' },
+  { to: '/app/recipes', icon: BookOpen, label: 'Рецепти' },
+  { to: '/app/products', icon: Apple, label: 'Продукти' },
+  { to: '/app/inventory', icon: Package, label: 'Запаси' },
+  { to: '/app/calendar', icon: Calendar, label: 'Календар' },
 ]
 
 export function Layout() {
@@ -38,7 +38,7 @@ export function Layout() {
               </NavLink>
             ))}
             <NavLink
-              to="/settings"
+              to="/app/settings"
               className={({ isActive }) =>
                 `p-2 rounded-xl transition-colors ${isActive ? 'bg-komora-50 text-komora-700' : 'text-stone-600 hover:bg-stone-100'}`
               }

@@ -21,7 +21,7 @@ export function RecipeDetailPage() {
     const load = async () => {
       if (!id) return
       const rec = await getRecipeById(id)
-      if (!rec) { navigate('/recipes'); return }
+      if (!rec) { navigate('/app/recipes'); return }
       setRecipe(rec)
       setTargetJars(rec.baseJars)
       setScaledIngredients(rec.ingredients)
@@ -131,7 +131,7 @@ export function RecipeDetailPage() {
         </div>
       )}
 
-      <Link to="/cannings/new" state={{ recipeId: recipe.id }}>
+      <Link to="/app/cannings/new" state={{ recipeId: recipe.id }}>
         <Button className="w-full">🫙 Створити закрутку за цим рецептом</Button>
       </Link>
     </div>
