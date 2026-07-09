@@ -4,6 +4,7 @@ import { Layout } from './components/layout/Layout'
 import { LandingPage } from './pages/LandingPage'
 import { AdminLoginPage } from './pages/AdminLoginPage'
 import { AdminDashboardPage } from './pages/AdminDashboardPage'
+import { AdminRecipesPage } from './pages/AdminRecipesPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { CanningListPage } from './pages/CanningListPage'
 import { CanningDetailPage } from './pages/CanningDetailPage'
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/admin" element={<AdminLoginPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/admin/recipes" element={<AdminRecipesPage />} />
         <Route element={<Layout />}>
           <Route path="/app" element={<DashboardPage />} />
           <Route path="/app/cannings" element={<CanningListPage />} />

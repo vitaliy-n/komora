@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { LogOut, Package, BookOpen, Users, ArrowLeft, Upload, RefreshCw, KeyRound, CheckCircle } from 'lucide-react'
+import { LogOut, Package, BookOpen, Users, ArrowLeft, Upload, RefreshCw, KeyRound, CheckCircle, Plus } from 'lucide-react'
 import { api, clearToken, isAuthenticated } from '../lib/api'
 import { builtInProducts } from '../data/products-db'
 import { builtInRecipes } from '../data/recipes-db'
@@ -151,6 +151,25 @@ export function AdminDashboardPage() {
                 Оновити статистику
               </button>
             </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold text-stone-800 mb-4">Управління</h2>
+          <div className="bg-white rounded-2xl border border-stone-200 p-6">
+            <Link
+              to="/admin/recipes"
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-stone-50 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-komora-50 flex items-center justify-center">
+                <BookOpen size={20} className="text-komora-600" />
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-stone-800">Рецепти</div>
+                <div className="text-sm text-stone-500">Створюйте, редагуйте та видаляйте рецепти</div>
+              </div>
+              <Plus size={20} className="text-stone-400" />
+            </Link>
           </div>
         </section>
 
