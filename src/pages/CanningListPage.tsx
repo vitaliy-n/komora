@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Plus, Filter } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useDatabase } from '../hooks/useDatabase'
 import { SearchBar } from '../components/common/SearchBar'
+import { FilterChips } from '../components/common/FilterChips'
 import { EmptyState } from '../components/common/EmptyState'
 import { Badge } from '../components/ui/Badge'
 import type { CanningEntry, Category } from '../types'
@@ -16,7 +17,6 @@ export function CanningListPage() {
   const [searchParams] = useSearchParams()
   const [filterCategory, setFilterCategory] = useState(searchParams.get('category') || '')
   const [filterLocation, setFilterLocation] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -35,6 +35,14 @@ export function CanningListPage() {
   })
 
   const locations = [...new Set(cannings.map((c) => c.storageLocation).filter(Boolean))]
+  const categoryCounts = cannings.reduce<Record<string, number>>((acc, c) => {
+    acc[c.categoryId] = (acc[c.categoryId] || 0) + 1
+    return acc
+  }, {})
+  const locationCounts = cannings.reduce<Record<string, number>>((acc, c) => {
+    if (c.storageLocation) acc[c.storageLocation] = (acc[c.storageLocation] || 0) + 1
+    return acc
+  }, {})
 
   return (
     <div className="space-y-4">
@@ -46,47 +54,34 @@ export function CanningListPage() {
         </Link>
       </div>
 
-      <div className="flex gap-2">
-        <div className="flex-1">
-          <SearchBar value={search} onChange={setSearch} placeholder="Шукати закрутки..." />
-        </div>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`p-2.5 rounded-xl border transition-colors ${showFilters ? 'bg-komora-50 border-komora-300 text-komora-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'}`}
-        >
-          <Filter size={20} />
-        </button>
-      </div>
+      <SearchBar value={search} onChange={setSearch} placeholder="Шукати закрутки..." />
 
-      {showFilters && (
-        <div className="card flex flex-wrap gap-2">
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="input w-auto text-sm"
-          >
-            <option value="">Всі категорії</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
-            ))}
-          </select>
-          <select
-            value={filterLocation}
-            onChange={(e) => setFilterLocation(e.target.value)}
-            className="input w-auto text-sm"
-          >
-            <option value="">Всі місця</option>
-            {locations.map((loc) => (
-              <option key={loc} value={loc}>{loc}</option>
-            ))}
-          </select>
-          {(filterCategory || filterLocation) && (
-            <button onClick={() => { setFilterCategory(''); setFilterLocation('') }} className="text-sm text-komora-600 px-3">
-              Скинути
-            </button>
-          )}
-        </div>
-      )}
+      <div className="space-y-2">
+        <FilterChips
+          chips={categories.map((cat) => ({
+            value: cat.id,
+            label: cat.name,
+            icon: cat.icon,
+            count: categoryCounts[cat.id] || 0,
+          }))}
+          selected={filterCategory}
+          onSelect={setFilterCategory}
+          allLabel="Всі категорії"
+        />
+        {locations.length > 0 && (
+          <FilterChips
+            chips={locations.map((loc) => ({
+              value: loc,
+              label: loc,
+              icon: '📍',
+              count: locationCounts[loc] || 0,
+            }))}
+            selected={filterLocation}
+            onSelect={setFilterLocation}
+            allLabel="Всі місця"
+          />
+        )}
+      </div>
 
       {filtered.length === 0 ? (
         <EmptyState

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPS Hub · Дашборд проєктів</title>
+    <meta name="description" content="Центральна панель для моніторингу та навігації між проєктами, розгорнутими на сервері.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:           #050714;
+            --bg2:          #080b1e;
+            --surface:      rgba(255,255,255,0.04);
+            --surface-hov:  rgba(255,255,255,0.07);
+            --border:       rgba(255,255,255,0.08);
+            --border-hov:   rgba(255,255,255,0.2);
+
+            --text:         #f0f4ff;
+            --text-dim:     #8897b8;
+            --text-faint:   #3a4460;
+
+            --famos-a:      #a78bfa;
+            --famos-b:      #7c3aed;
+            --etymology-a:  #34d399;
+            --etymology-b:  #059669;
+            --nutrio-a:     #60a5fa;
+            --nutrio-b:     #2563eb;
+            --family-a:     #f472b6;
+            --family-b:     #be185d;
+            --komora-a:     #4ade80;
+            --komora-b:     #16a34a;
+
+            --glow-radius: 320px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.018;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+            animation: blobFloat 18s ease-in-out infinite;
+        }
+        .blob-1 { width: 500px; height: 500px; background: rgba(124,58,237,0.12); top: -100px; left: -100px; animation-delay: 0s; }
+        .blob-2 { width: 400px; height: 400px; background: rgba(52,211,153,0.08); top: 40vh; right: -100px; animation-delay: -6s; }
+        .blob-3 { width: 350px; height: 350px; background: rgba(96,165,250,0.07); bottom: 0; left: 30%; animation-delay: -12s; }
+        .blob-4 { width: 300px; height: 300px; background: rgba(74,222,128,0.06); top: 60vh; left: 10%; animation-delay: -3s; }
+
+        @keyframes blobFloat {
+            0%,100% { transform: translate(0,0) scale(1); }
+            33%      { transform: translate(30px,-40px) scale(1.05); }
+            66%      { transform: translate(-20px, 30px) scale(0.97); }
+        }
+
+        .page-wrap {
+            position: relative; z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+
+        /* ── Header ── */
+        header {
+            padding: 56px 0 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .logo-ring {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+            box-shadow: 0 0 32px rgba(167,139,250,0.35);
+        }
+        .hero-text h1 {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+        }
+        .hero-text h1 span {
+            background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-sub {
+            margin-top: 4px;
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        /* ── Server bar ── */
+        .server-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 20px;
+            margin-bottom: 36px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            backdrop-filter: blur(12px);
+        }
+        .server-bar-label {
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .server-ip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            background: rgba(255,255,255,0.04);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .server-online {
+            margin-left: auto;
+            display: flex; align-items: center; gap: 7px;
+            font-size: 0.85rem; font-weight: 500;
+        }
+        .pulse-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 0 0 rgba(52,211,153,0.5);
+            animation: pulse-anim 2s infinite;
+        }
+        @keyframes pulse-anim {
+            0%   { box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }
+            70%  { box-shadow: 0 0 0 8px rgba(52,211,153,0); }
+            100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+        }
+        .last-updated {
+            font-size: 0.72rem;
+            color: var(--text-faint);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Section title ── */
+        .section-title {
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 16px;
+        }
+
+        /* ── DB Stats ── */
+        .db-section { margin-bottom: 36px; }
+        .db-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        .db-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            backdrop-filter: blur(10px);
+            transition: border-color 0.3s, background 0.3s;
+        }
+        .db-card:hover {
+            border-color: var(--border-hov);
+            background: var(--surface-hov);
+        }
+        .db-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .db-lbl { font-size: 0.78rem; color: var(--text-dim); margin-top: 6px; }
+        .db-proj { font-size: 0.62rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+        /* ── Projects Grid ── */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 36px;
+        }
+
+        .card {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s, background 0.3s;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(var(--glow-radius) circle at var(--mx, 50%) var(--my, 30%), var(--card-glow, rgba(167,139,250,0.06)), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+        .card:hover::before { opacity: 1; }
+        .card:hover {
+            border-color: var(--border-hov);
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+            background: var(--surface-hov);
+        }
+
+        .card-shimmer {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--c-a), transparent);
+            opacity: 0;
+            transition: opacity 0.35s;
+        }
+        .card:hover .card-shimmer { opacity: 1; }
+
+        .card-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            position: relative;
+            background: linear-gradient(135deg, var(--c-a), var(--c-b));
+            box-shadow: 0 0 24px var(--c-glow, rgba(167,139,250,0.3));
+            flex-shrink: 0;
+        }
+
+        .card-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+        }
+        .card-desc {
+            font-size: 0.88rem;
+            color: var(--text-dim);
+            line-height: 1.55;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .stat-badge {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 6px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .stat-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--c-a);
+        }
+        .stat-lbl {
+            font-size: 0.65rem;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+            margin-top: auto;
+        }
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: rgba(52,211,153,0.08);
+            color: #34d399;
+            border: 1px solid rgba(52,211,153,0.2);
+            transition: all 0.3s;
+        }
+        .status-pill.offline {
+            background: rgba(239,68,68,0.08);
+            color: #f87171;
+            border-color: rgba(239,68,68,0.2);
+        }
+        .status-pill.loading {
+            background: rgba(251,191,36,0.08);
+            color: #fbbf24;
+            border-color: rgba(251,191,36,0.2);
+            animation: blink-anim 1.4s ease-in-out infinite;
+        }
+        @keyframes blink-anim {
+            0%,100% { opacity: 1; }
+            50%      { opacity: 0.4; }
+        }
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .card-arrow {
+            font-size: 1.1rem;
+            color: var(--text-faint);
+            transition: transform 0.3s, color 0.3s;
+        }
+        .card:hover .card-arrow {
+            transform: translateX(4px);
+            color: var(--c-a);
+        }
+
+        /* ── Nutrio Services Panel ── */
+        .nutrio-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 36px;
+            backdrop-filter: blur(10px);
+        }
+        .nutrio-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .nutrio-panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .nutrio-panel-title .icon {
+            width: 32px; height: 32px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--nutrio-a), var(--nutrio-b));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+        .nutrio-summary {
+            display: flex;
+            gap: 12px;
+            font-size: 0.78rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .nutrio-summary span { color: var(--text-dim); }
+        .nutrio-summary b { color: var(--text); }
+
+        .svc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+        }
+        .svc-item {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: border-color 0.3s;
+        }
+        .svc-item:hover { border-color: var(--border-hov); }
+        .svc-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .svc-dot.running { background: #34d399; box-shadow: 0 0 8px rgba(52,211,153,0.4); }
+        .svc-dot.healthy { background: #34d399; box-shadow: 0 0 8px rgba(52,211,153,0.6); }
+        .svc-dot.restarting { background: #fbbf24; animation: blink-anim 1s infinite; }
+        .svc-dot.down { background: #f87171; }
+
+        .svc-info { flex: 1; min-width: 0; }
+        .svc-name {
+            font-size: 0.82rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .svc-name .svc-type {
+            font-size: 0.65rem;
+            color: var(--text-faint);
+            font-family: 'JetBrains Mono', monospace;
+            margin-left: 6px;
+        }
+        .svc-uptime {
+            font-size: 0.68rem;
+            color: var(--text-faint);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Tech footer ── */
+        .tech-footer {
+            border-top: 1px solid var(--border);
+            padding-top: 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .tech-badge {
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-faint);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 5px 10px;
+        }
+        .tech-sep { color: var(--text-faint); font-size: 0.7rem; }
+
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 1.8s infinite linear;
+            border-radius: 6px;
+        }
+        @keyframes shimmer {
+            0%   { background-position: -500px 0; }
+            100% { background-position: 500px 0; }
+        }
+
+        @media (max-width: 640px) {
+            header { padding: 36px 0 28px; }
+            .projects-grid { grid-template-columns: 1fr; }
+            .svc-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+<div class="blob blob-4"></div>
+
+<div class="page-wrap">
+
+    <header>
+        <div class="logo-ring">🚀</div>
+        <div class="hero-text">
+            <h1>VPS <span>Hub</span></h1>
+            <p class="hero-sub">Центральна панель управління проєктами</p>
+        </div>
+    </header>
+
+    <div class="server-bar">
+        <span class="server-bar-label">Сервер</span>
+        <span class="server-ip">62.171.190.50</span>
+        <span class="server-ip">vmi3084380.contaboserver.net</span>
+        <div class="server-online">
+            <div class="pulse-dot"></div>
+            <span>Online</span>
+        </div>
+        <span class="last-updated" id="js-updated">перевірка…</span>
+    </div>
+
+    <!-- DB Stats -->
+    <div class="db-section">
+        <p class="section-title">// база даних · записи</p>
+        <div class="db-grid" id="js-db-grid"></div>
+    </div>
+
+    <!-- Projects -->
+    <p class="section-title">// проєкти</p>
+    <div class="projects-grid">
+
+        <a href="http://famos.62.171.190.50.nip.io" class="card" id="card-famos" data-url="http://famos.62.171.190.50.nip.io" style="--c-a:var(--famos-a);--c-b:var(--famos-b);--c-glow:rgba(167,139,250,0.35);--card-glow:rgba(167,139,250,0.08);" target="_blank" rel="noopener">
+            <div class="card-shimmer"></div>
+            <div class="card-icon">🎭</div>
+            <div class="card-name">Famos Encyclopedia</div>
+            <div class="card-desc">Багатовимірний аналіз відомих людей: нумерологія, профайлинг та фізіогноміка обличчя.</div>
+            <div class="card-stats" id="stats-famos">
+                <div class="stat-badge"><span class="stat-val skeleton" style="width:40px;height:18px;display:block;">&nbsp;</span><span class="stat-lbl">Персони</span></div>
+            </div>
+            <div class="card-footer">
+                <div class="status-pill loading" id="status-famos"><div class="status-dot"></div>Перевірка…</div>
+                <span class="card-arrow">→</span>
+            </div>
+        </a>
+
+        <a href="http://etymology.62.171.190.50.nip.io" class="card" id="card-etymology" data-url="http://etymology.62.171.190.50.nip.io" style="--c-a:var(--etymology-a);--c-b:var(--etymology-b);--c-glow:rgba(52,211,153,0.35);--card-glow:rgba(52,211,153,0.08);" target="_blank" rel="noopener">
+            <div class="card-shimmer"></div>
+            <div class="card-icon">📚</div>
+            <div class="card-name">Etymology Learner</div>
+            <div class="card-desc">Вивчення слів через етимологічні зв'язки, флеш-картки та систему повторення.</div>
+            <div class="card-stats" id="stats-etymology">
+                <div class="stat-badge"><span class="stat-val skeleton" style="width:40px;height:18px;display:block;">&nbsp;</span><span class="stat-lbl">Слова</span></div>
+                <div class="stat-badge"><span class="stat-val skeleton" style="width:30px;height:18px;display:block;">&nbsp;</span><span class="stat-lbl">Мови</span></div>
+            </div>
+            <div class="card-footer">
+                <div class="status-pill loading" id="status-etymology"><div class="status-dot"></div>Перевірка…</div>
+                <span class="card-arrow">→</span>
+            </div>
+        </a>
+
+        <a href="http://nutrio.62.171.190.50.nip.io" class="card" id="card-nutrio" data-url="http://nutrio.62.171.190.50.nip.io" style="--c-a:var(--nutrio-a);--c-b:var(--nutrio-b);--c-glow:rgba(96,165,250,0.35);--card-glow:rgba(96,165,250,0.08);" target="_blank" rel="noopener">
+            <div class="card-shimmer"></div>
+            <div class="card-icon">🥗</div>
+            <div class="card-name">Nutrio</div>
+            <div class="card-desc">Трекер харчування та фітнесу з мікросервісною архітектурою: 7 сервісів, 7 БД.</div>
+            <div class="card-stats" id="stats-nutrio">
+                <div class="stat-badge"><span class="stat-val">Java</span><span class="stat-lbl">Spring Boot</span></div>
+                <div class="stat-badge"><span class="stat-val" id="nutrio-svc-count">—</span><span class="stat-lbl">Сервісів</span></div>
+            </div>
+            <div class="card-footer">
+                <div class="status-pill loading" id="status-nutrio"><div class="status-dot"></div>Перевірка…</div>
+                <span class="card-arrow">→</span>
+            </div>
+        </a>
+
+        <a href="http://family.62.171.190.50.nip.io" class="card" id="card-family" data-url="http://family.62.171.190.50.nip.io" style="--c-a:var(--family-a);--c-b:var(--family-b);--c-glow:rgba(244,114,182,0.35);--card-glow:rgba(244,114,182,0.08);" target="_blank" rel="noopener">
+            <div class="card-shimmer"></div>
+            <div class="card-icon">🌳</div>
+            <div class="card-name">Family Tree</div>
+            <div class="card-desc">Генеалогічне дерево з інтерактивною візуалізацією зв'язків між поколіннями.</div>
+            <div class="card-stats" id="stats-family">
+                <div class="stat-badge"><span class="stat-val skeleton" style="width:40px;height:18px;display:block;">&nbsp;</span><span class="stat-lbl">Особи</span></div>
+            </div>
+            <div class="card-footer">
+                <div class="status-pill loading" id="status-family"><div class="status-dot"></div>Перевірка…</div>
+                <span class="card-arrow">→</span>
+            </div>
+        </a>
+
+        <a href="http://komora.62.171.190.50.nip.io" class="card" id="card-komora" data-url="http://komora.62.171.190.50.nip.io" style="--c-a:var(--komora-a);--c-b:var(--komora-b);--c-glow:rgba(74,222,128,0.35);--card-glow:rgba(74,222,128,0.08);" target="_blank" rel="noopener">
+            <div class="card-shimmer"></div>
+            <div class="card-icon">🫙</div>
+            <div class="card-name">Комора</div>
+            <div class="card-desc">Додаток для домашніх закруток: каталог продуктів, рецепти, сезонний календар та інвентар.</div>
+            <div class="card-stats" id="stats-komora">
+                <div class="stat-badge"><span class="stat-val">787</span><span class="stat-lbl">Продукти</span></div>
+                <div class="stat-badge"><span class="stat-val">22</span><span class="stat-lbl">Рецепти</span></div>
+            </div>
+            <div class="card-footer">
+                <div class="status-pill loading" id="status-komora"><div class="status-dot"></div>Перевірка…</div>
+                <span class="card-arrow">→</span>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- Nutrio Microservices -->
+    <div class="nutrio-panel">
+        <div class="nutrio-panel-header">
+            <div class="nutrio-panel-title">
+                <div class="icon">🥗</div>
+                Nutrio · Microservices
+            </div>
+            <div class="nutrio-summary" id="js-nutrio-summary">
+                <span>завантаження…</span>
+            </div>
+        </div>
+        <div class="svc-grid" id="js-svc-grid">
+            <div class="skeleton" style="height:48px;border-radius:12px;"></div>
+            <div class="skeleton" style="height:48px;border-radius:12px;"></div>
+            <div class="skeleton" style="height:48px;border-radius:12px;"></div>
+            <div class="skeleton" style="height:48px;border-radius:12px;"></div>
+        </div>
+    </div>
+
+    <div class="tech-footer">
+        <span class="tech-badge">nginx</span>
+        <span class="tech-sep">·</span>
+        <span class="tech-badge">ubuntu</span>
+        <span class="tech-sep">·</span>
+        <span class="tech-badge">docker</span>
+        <span class="tech-sep">·</span>
+        <span class="tech-badge">fastapi</span>
+        <span class="tech-sep">·</span>
+        <span class="tech-badge">spring boot</span>
+        <span class="tech-sep">·</span>
+        <span class="tech-badge">react + vite</span>
+        <span class="tech-sep">·</span>
+        <span class="tech-badge">pwa / dexie</span>
+        <span class="tech-sep">·</span>
+        <span class="tech-badge">sqlite / postgresql</span>
+    </div>
+
+</div>
+
+<script>
+/* ── Mouse glow ── */
+document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', ((e.clientX - r.left) / r.width) * 100 + '%');
+        card.style.setProperty('--my', ((e.clientY - r.top) / r.height) * 100 + '%');
+    });
+});
+
+/* ── Timestamp ── */
+function setTimestamp() {
+    const el = document.getElementById('js-updated');
+    if (el) el.textContent = 'оновлено ' + new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+setTimestamp();
+
+/* ── Status checker ── */
+function setStatus(id, online) {
+    const el = document.getElementById('status-' + id);
+    if (!el) return;
+    el.classList.remove('loading', 'offline');
+    el.innerHTML = '<div class="status-dot"></div> ' + (online ? 'Online' : 'Offline');
+    if (!online) el.classList.add('offline');
+}
+
+async function pingService(id, url) {
+    try {
+        await fetch(url, { method: 'HEAD', mode: 'no-cors', signal: AbortSignal.timeout(5000) });
+        setStatus(id, true);
+    } catch {
+        setStatus(id, false);
+    }
+}
+
+/* ── DB Stats ── */
+function buildDbGrid(data) {
+    const grid = document.getElementById('js-db-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const items = [
+        { val: data.etymology?.words ?? '—',     label: 'Слова',    proj: 'Etymology',   ca: '#34d399', cb: '#059669' },
+        { val: data.etymology?.languages ?? '—', label: 'Мови',     proj: 'Etymology',   ca: '#34d399', cb: '#059669' },
+        { val: data.etymology?.users ?? '—',     label: 'Юзери',    proj: 'Etymology',   ca: '#34d399', cb: '#059669' },
+        { val: data.famos?.people ?? '—',        label: 'Персони',  proj: 'Famos',       ca: '#a78bfa', cb: '#7c3aed' },
+        { val: data.family?.persons ?? '—',      label: 'Особи',    proj: 'Family Tree', ca: '#f472b6', cb: '#be185d' },
+        { val: 787,                               label: 'Продукти', proj: 'Komora',      ca: '#4ade80', cb: '#16a34a' },
+        { val: 22,                                label: 'Рецепти',  proj: 'Komora',      ca: '#4ade80', cb: '#16a34a' },
+    ];
+
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'db-card';
+        div.innerHTML = `
+            <div class="db-val" style="background:linear-gradient(90deg,${item.ca},${item.cb});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                ${typeof item.val === 'number' ? item.val.toLocaleString('uk-UA') : item.val}
+            </div>
+            <div class="db-lbl">${item.label}</div>
+            <div class="db-proj">${item.proj}</div>
+        `;
+        grid.appendChild(div);
+    });
+}
+
+function buildCardStats(id, data) {
+    const el = document.getElementById('stats-' + id);
+    if (!el || !data) return;
+    el.innerHTML = Object.entries(data).map(([lbl, val]) => `
+        <div class="stat-badge">
+            <span class="stat-val">${typeof val === 'number' ? val.toLocaleString('uk-UA') : val}</span>
+            <span class="stat-lbl">${lbl}</span>
+        </div>
+    `).join('');
+}
+
+async function loadStats() {
+    try {
+        const res = await fetch('/stats.json', { cache: 'no-store', signal: AbortSignal.timeout(4000) });
+        if (res.ok) {
+            const data = await res.json();
+            const proj = data.projects || {};
+            buildDbGrid(proj);
+            buildCardStats('famos', { 'Персони': proj.famos?.people ?? '—' });
+            buildCardStats('etymology', { 'Слова': proj.etymology?.words ?? '—', 'Мови': proj.etymology?.languages ?? '—' });
+            buildCardStats('family', { 'Особи': proj.family?.persons ?? '—' });
+            buildCardStats('komora', { 'Продукти': 787, 'Рецепти': 22 });
+        } else {
+            throw new Error('No stats.json');
+        }
+    } catch {
+        try {
+            const [langRes] = await Promise.allSettled([
+                fetch('http://etymology.62.171.190.50.nip.io/api/languages/', { signal: AbortSignal.timeout(4000) }),
+            ]);
+            let langs = '—';
+            if (langRes.status === 'fulfilled' && langRes.value.ok) {
+                const arr = await langRes.value.json();
+                if (Array.isArray(arr)) langs = arr.length;
+            }
+            buildDbGrid({ etymology: { words: '—', languages: langs, users: '—' }, famos: { people: '—' }, family: { persons: '—' } });
+            buildCardStats('etymology', { 'Слова': '—', 'Мови': langs });
+            buildCardStats('famos', { 'Персони': '—' });
+            buildCardStats('family', { 'Особи': '—' });
+            buildCardStats('komora', { 'Продукти': 787, 'Рецепти': 22 });
+        } catch {
+            buildDbGrid({ etymology: {}, famos: {}, family: {} });
+            buildCardStats('komora', { 'Продукти': 787, 'Рецепти': 22 });
+        }
+    }
+}
+
+/* ── Nutrio Services ── */
+function classifyService(name) {
+    if (name.includes('postgres')) return { type: 'db', label: 'PostgreSQL' };
+    if (name.includes('gateway')) return { type: 'gw', label: 'Gateway' };
+    if (name.includes('discovery')) return { type: 'disc', label: 'Discovery' };
+    if (name.includes('config')) return { type: 'cfg', label: 'Config' };
+    if (name.includes('nginx')) return { type: 'proxy', label: 'Proxy' };
+    if (name.includes('frontend')) return { type: 'web', label: 'Frontend' };
+    if (name.includes('auth')) return { type: 'svc', label: 'Auth' };
+    if (name.includes('food')) return { type: 'svc', label: 'Food' };
+    if (name.includes('exercise')) return { type: 'svc', label: 'Exercise' };
+    if (name.includes('kitchen')) return { type: 'svc', label: 'Kitchen' };
+    if (name.includes('health')) return { type: 'svc', label: 'Health' };
+    if (name.includes('billing')) return { type: 'svc', label: 'Billing' };
+    if (name.includes('b2b')) return { type: 'svc', label: 'B2B' };
+    return { type: 'svc', label: 'Service' };
+}
+
+function cleanName(name) {
+    return name.replace(/^(nutrio|microservices)-/, '').replace(/-1$/, '');
+}
+
+function buildNutrioServices(services) {
+    const grid = document.getElementById('js-svc-grid');
+    const summary = document.getElementById('js-nutrio-summary');
+    if (!grid) return;
+
+    const running = services.filter(s => !s.status.includes('Restarting') && !s.status.includes('Exit')).length;
+    const healthy = services.filter(s => s.healthy).length;
+    const restarting = services.filter(s => s.status.includes('Restarting')).length;
+    const total = services.length;
+
+    summary.innerHTML = `
+        <span><b style="color:#34d399">${running}</b>/${total} running</span>
+        <span><b style="color:#34d399">${healthy}</b> healthy</span>
+        ${restarting > 0 ? `<span><b style="color:#fbbf24">${restarting}</b> restarting</span>` : ''}
+    `;
+
+    const nutrioSvcCount = document.getElementById('nutrio-svc-count');
+    if (nutrioSvcCount) nutrioSvcCount.textContent = running;
+
+    grid.innerHTML = services.map(s => {
+        const cls = s.classification;
+        const isRestarting = s.status.includes('Restarting');
+        const dotClass = isRestarting ? 'restarting' : (s.healthy ? 'healthy' : 'running');
+        const displayName = cleanName(s.name);
+
+        return `
+            <div class="svc-item">
+                <div class="svc-dot ${dotClass}"></div>
+                <div class="svc-info">
+                    <div class="svc-name">${displayName}<span class="svc-type">${cls.label}</span></div>
+                    <div class="svc-uptime">${s.uptime}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function loadNutrioServices() {
+    try {
+        const res = await fetch('/nutrio-services.json', { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+        if (res.ok) {
+            const services = await res.json();
+            services.forEach(s => { s.classification = classifyService(s.name); });
+            services.sort((a, b) => {
+                const order = { db: 0, cfg: 1, disc: 2, gw: 3, proxy: 4, web: 5, svc: 6 };
+                return (order[a.classification.type] ?? 9) - (order[b.classification.type] ?? 9)
+                    || a.name.localeCompare(b.name);
+            });
+            buildNutrioServices(services);
+        } else {
+            document.getElementById('js-svc-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:20px;">Не вдалося завантажити статус сервісів</div>';
+        }
+    } catch {
+        document.getElementById('js-svc-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);padding:20px;">Не вдалося завантажити статус сервісів</div>';
+    }
+}
+
+/* ── Ping all ── */
+const services = [
+    { id: 'famos',     url: 'http://famos.62.171.190.50.nip.io' },
+    { id: 'etymology', url: 'http://etymology.62.171.190.50.nip.io' },
+    { id: 'nutrio',    url: 'http://nutrio.62.171.190.50.nip.io' },
+    { id: 'family',    url: 'http://family.62.171.190.50.nip.io' },
+    { id: 'komora',    url: 'http://komora.62.171.190.50.nip.io' },
+];
+
+services.forEach(s => pingService(s.id, s.url));
+loadStats();
+loadNutrioServices();
+setTimestamp();
+
+setInterval(() => {
+    services.forEach(s => pingService(s.id, s.url));
+    loadStats();
+    loadNutrioServices();
+    setTimestamp();
+}, 30000);
+</script>
+</body>
+</html>

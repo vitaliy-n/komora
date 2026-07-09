@@ -12,10 +12,19 @@ export function useDatabase() {
     if (categoryCount === 0) {
       await db.categories.bulkAdd(builtInCategories)
     }
-    const productCount = await db.products.count()
-    if (productCount === 0) {
-      await db.products.bulkAdd(builtInProducts)
+    const existingProducts = await db.products.toArray()
+    const existingProductIds = new Set(existingProducts.map(p => p.id))
+
+    const productsToAdd = builtInProducts.filter(p => !existingProductIds.has(p.id))
+    if (productsToAdd.length > 0) {
+      await db.products.bulkAdd(productsToAdd)
     }
+
+    const productsToUpdate = builtInProducts.filter(p => existingProductIds.has(p.id))
+    if (productsToUpdate.length > 0) {
+      await db.products.bulkPut(productsToUpdate)
+    }
+
     const recipeCount = await db.recipes.count()
     if (recipeCount === 0) {
       await db.recipes.bulkAdd(builtInRecipes)

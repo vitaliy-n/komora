@@ -11,6 +11,7 @@ import { ProductsPage } from './pages/ProductsPage'
 import { ProductDetailPage } from './pages/ProductDetailPage'
 import { InventoryPage } from './pages/InventoryPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { CalendarPage } from './pages/CalendarPage'
 import { useDatabase } from './hooks/useDatabase'
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Routes>

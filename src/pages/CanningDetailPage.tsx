@@ -61,7 +61,7 @@ export function CanningDetailPage() {
     setCanning({ ...canning, rating, review })
     setShowRating(false)
   }
-
+  
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">

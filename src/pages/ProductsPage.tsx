@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useDatabase } from '../hooks/useDatabase'
 import { SearchBar } from '../components/common/SearchBar'
+import { FilterChips } from '../components/common/FilterChips'
 import { Badge } from '../components/ui/Badge'
 import type { Product } from '../types'
 import { getCurrentMonth, getSeasonLabel } from '../utils/date'
@@ -17,8 +18,15 @@ export function ProductsPage() {
     getAllProducts().then(setProducts)
   }, [getAllProducts])
 
-  const productCategories = [...new Set(products.map((p) => p.category))]
+  const productCategories = [...new Set(products.map((p) => p.category))].sort((a, b) =>
+    a.localeCompare(b, 'uk'),
+  )
   const currentMonth = getCurrentMonth()
+
+  const categoryCounts = products.reduce<Record<string, number>>((acc, p) => {
+    acc[p.category] = (acc[p.category] || 0) + 1
+    return acc
+  }, {})
 
   const filtered = products.filter((p) => {
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
@@ -36,34 +44,27 @@ export function ProductsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="page-title">Довідник продуктів</h1>
-        <Badge variant="info">{products.length} продуктів</Badge>
+        <Badge variant="info">{filtered.length} / {products.length}</Badge>
       </div>
 
       <SearchBar value={search} onChange={setSearch} placeholder="Шукати продукт..." />
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        <button
-          onClick={() => setFilterCategory('')}
-          className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!filterCategory ? 'bg-komora-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
-        >
-          Всі
-        </button>
-        {productCategories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setFilterCategory(cat === filterCategory ? '' : cat)}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filterCategory === cat ? 'bg-komora-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      <FilterChips
+        chips={productCategories.map((cat) => ({
+          value: cat,
+          label: cat,
+          count: categoryCounts[cat] || 0,
+        }))}
+        selected={filterCategory}
+        onSelect={setFilterCategory}
+        allLabel="Всі категорії"
+      />
 
       <button
         onClick={() => setShowSeasonalOnly(!showSeasonalOnly)}
         className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${showSeasonalOnly ? 'bg-orange-500 text-white' : 'bg-orange-50 text-orange-600 hover:bg-orange-100'}`}
       >
-        🌿 Зараз сезон
+        🌿 Зараз сезон ({products.filter((p) => p.seasonMonths.includes(currentMonth)).length})
       </button>
 
       {Object.entries(grouped).map(([category, items]) => (

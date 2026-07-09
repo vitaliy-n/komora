@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Plus, Trash2, AlertTriangle } from 'lucide-react'
 import { useDatabase } from '../hooks/useDatabase'
 import { SearchBar } from '../components/common/SearchBar'
+import { FilterChips } from '../components/common/FilterChips'
+import { SearchableSelect } from '../components/ui/SearchableSelect'
 import { EmptyState } from '../components/common/EmptyState'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -16,6 +18,8 @@ export function InventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState('')
+  const [filterStorage, setFilterStorage] = useState('')
+  const [filterExpiry, setFilterExpiry] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [form, setForm] = useState({
     productId: '',
@@ -38,8 +42,30 @@ export function InventoryPage() {
 
   const filtered = inventory.filter((item) => {
     if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false
+    if (filterStorage && item.storageMethod !== filterStorage) return false
+    if (filterExpiry) {
+      const status = item.expiryDate ? getExpiryStatus(item.expiryDate) : null
+      if (filterExpiry === 'expired' && status !== 'expired') return false
+      if (filterExpiry === 'soon' && !(status === 'danger' || status === 'warning')) return false
+      if (filterExpiry === 'ok' && status !== 'ok') return false
+      if (filterExpiry === 'none' && item.expiryDate) return false
+    }
     return true
   })
+
+  const storageCounts = inventory.reduce<Record<string, number>>((acc, item) => {
+    acc[item.storageMethod] = (acc[item.storageMethod] || 0) + 1
+    return acc
+  }, {})
+
+  const expiryCounts = inventory.reduce<Record<string, number>>((acc, item) => {
+    const status = item.expiryDate ? getExpiryStatus(item.expiryDate) : null
+    if (!item.expiryDate) acc.none = (acc.none || 0) + 1
+    else if (status === 'expired') acc.expired = (acc.expired || 0) + 1
+    else if (status === 'danger' || status === 'warning') acc.soon = (acc.soon || 0) + 1
+    else acc.ok = (acc.ok || 0) + 1
+    return acc
+  }, {})
 
   const handleProductSelect = (productId: string) => {
     const product = products.find((p) => p.id === productId)
@@ -90,7 +116,33 @@ export function InventoryPage() {
         </Button>
       </div>
 
-      <SearchBar value={search} onChange={setSearch} placeholder="Шукати в запасах..." />
+      <div className="flex items-center justify-between">
+        <SearchBar value={search} onChange={setSearch} placeholder="Шукати в запасах..." />
+        <Badge variant="info">{filtered.length} / {inventory.length}</Badge>
+      </div>
+
+      <FilterChips
+        chips={(Object.entries(STORAGE_METHOD_LABELS) as [StorageMethod, string][]).map(([key, label]) => ({
+          value: key,
+          label,
+          count: storageCounts[key] || 0,
+        }))}
+        selected={filterStorage}
+        onSelect={setFilterStorage}
+        allLabel="Всі місця"
+      />
+
+      <FilterChips
+        chips={[
+          { value: 'expired', label: 'Прострочено', count: expiryCounts.expired || 0 },
+          { value: 'soon', label: 'Скоро', count: expiryCounts.soon || 0 },
+          { value: 'ok', label: 'В нормі', count: expiryCounts.ok || 0 },
+          { value: 'none', label: 'Без терміну', count: expiryCounts.none || 0 },
+        ]}
+        selected={filterExpiry}
+        onSelect={setFilterExpiry}
+        allLabel="Всі терміни"
+      />
 
       {filtered.length === 0 ? (
         <EmptyState
@@ -140,15 +192,15 @@ export function InventoryPage() {
 
       <Modal isOpen={showAdd} onClose={() => setShowAdd(false)} title="Додати продукт до запасів">
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Оберіть продукт</label>
-            <select value={form.productId} onChange={(e) => handleProductSelect(e.target.value)} className="input">
-              <option value="">Довільний продукт</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>{p.icon} {p.name}</option>
-              ))}
-            </select>
-          </div>
+          <SearchableSelect
+            label="Оберіть продукт"
+            placeholder="Довільний продукт"
+            searchPlaceholder="Пошук продукту..."
+            emptyText="Не знайдено"
+            value={form.productId}
+            onChange={handleProductSelect}
+            options={products.map((p) => ({ value: p.id, label: p.name, icon: p.icon }))}
+          />
           <Input
             label="Назва *"
             value={form.name}

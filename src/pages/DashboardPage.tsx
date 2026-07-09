@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, AlertTriangle, TrendingUp, Calendar } from 'lucide-react'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { Plus, AlertTriangle, TrendingUp, Calendar, BookOpen, Leaf, Package } from 'lucide-react'
 import { useDatabase } from '../hooks/useDatabase'
 import { useNotifications } from '../hooks/useNotifications'
 import { Badge } from '../components/ui/Badge'
+import { db } from '../db/database'
 import type { CanningEntry, InventoryItem, Category } from '../types'
 import type { ExpiryAlert } from '../utils/expiry-checker'
 import { formatDate, getCurrentMonth, getMonthName } from '../utils/date'
@@ -15,6 +17,9 @@ export function DashboardPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [alerts, setAlerts] = useState<ExpiryAlert[]>([])
+
+  const products = useLiveQuery(() => db.products.toArray())
+  const recipes = useLiveQuery(() => db.recipes.toArray())
 
   useEffect(() => {
     const load = async () => {
@@ -41,6 +46,18 @@ export function DashboardPage() {
     return acc
   }, {})
 
+  const seasonalProducts = (products || []).filter((p) => p.seasonMonths.includes(currentMonth))
+  const seasonalByCategory = seasonalProducts.reduce<Record<string, typeof seasonalProducts>>((acc, p) => {
+    if (!acc[p.category]) acc[p.category] = []
+    acc[p.category].push(p)
+    return acc
+  }, {})
+  const topSeasonalCategories = Object.entries(seasonalByCategory)
+    .sort(([, a], [, b]) => b.length - a.length)
+    .slice(0, 4)
+
+  const hasUserData = cannings.length > 0 || inventory.length > 0
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -59,6 +76,30 @@ export function DashboardPage() {
         <StatCard icon="✅" label="Вжито цього року" value={totalConsumed} />
         <StatCard icon="📝" label="Закруток за рік" value={thisYearCannings.length} />
         <StatCard icon="📦" label="Продуктів в запасі" value={inventory.length} />
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <InfoCard
+          icon={<Package size={20} className="text-komora-600" />}
+          label="Продуктів у базі"
+          value={products?.length ?? 0}
+          link="/products"
+          linkLabel="Каталог →"
+        />
+        <InfoCard
+          icon={<BookOpen size={20} className="text-komora-600" />}
+          label="Рецептів"
+          value={recipes?.length ?? 0}
+          link="/recipes"
+          linkLabel="Рецепти →"
+        />
+        <InfoCard
+          icon={<Leaf size={20} className="text-komora-600" />}
+          label="Сезонних продуктів"
+          value={seasonalProducts.length}
+          link="/calendar"
+          linkLabel="Календар →"
+        />
       </div>
 
       {alerts.length > 0 && (
@@ -118,14 +159,71 @@ export function DashboardPage() {
       )}
 
       <div className="card">
-        <div className="flex items-center gap-2 mb-3">
-          <Calendar size={18} className="text-komora-600" />
-          <h2 className="font-semibold">Зараз сезон ({getMonthName(currentMonth)})</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Calendar size={18} className="text-komora-600" />
+            <h2 className="font-semibold">Сезонні продукти — {getMonthName(currentMonth)}</h2>
+          </div>
+          <Link to="/calendar" className="text-sm font-medium text-komora-600 hover:text-komora-700">
+            Усі →
+          </Link>
         </div>
-        <p className="text-sm text-stone-500">
-          Перегляньте <Link to="/products" className="text-komora-600 underline">довідник продуктів</Link> щоб дізнатися, що зараз найкраще консервувати.
-        </p>
+        {topSeasonalCategories.length > 0 ? (
+          <div className="space-y-4">
+            {topSeasonalCategories.map(([category, items]) => (
+              <div key={category}>
+                <div className="text-xs font-medium text-stone-400 mb-2">
+                  {category} <span className="text-stone-300">({items.length})</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {items.slice(0, 10).map((p) => (
+                    <Link
+                      key={p.id}
+                      to={`/products/${p.id}`}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-stone-50 hover:bg-stone-100 transition-colors"
+                    >
+                      <span className="text-base">{p.icon}</span>
+                      <span className="text-xs font-medium text-stone-700">{p.name}</span>
+                    </Link>
+                  ))}
+                  {items.length > 10 && (
+                    <Link
+                      to="/calendar"
+                      className="flex items-center px-2.5 py-1.5 rounded-lg bg-komora-50 hover:bg-komora-100 transition-colors text-xs font-medium text-komora-700"
+                    >
+                      +{items.length - 10} ще
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-stone-500">
+            Перегляньте <Link to="/calendar" className="text-komora-600 underline">сезонний календар</Link>, щоб дізнатися, що зараз найкраще консервувати.
+          </p>
+        )}
       </div>
+
+      {!hasUserData && (
+        <div className="card bg-komora-50/50 border-komora-200">
+          <h2 className="font-semibold text-komora-800 mb-2">👋 Ласкаво просимо!</h2>
+          <p className="text-sm text-stone-600 mb-3">
+            Це ваша цифрова комора. Додавайте закрутки, ведіть інвентар продуктів, використовуйте рецепти та сезонний календар.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/cannings/new" className="btn-primary text-sm flex items-center gap-1.5">
+              <Plus size={16} /> Перша закрутка
+            </Link>
+            <Link to="/recipes" className="btn-secondary text-sm">
+              📖 Переглянути рецепти
+            </Link>
+            <Link to="/products" className="btn-secondary text-sm">
+              🥕 Каталог продуктів
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -137,5 +235,30 @@ function StatCard({ icon, label, value }: { icon: string; label: string; value: 
       <div className="text-2xl font-bold text-stone-900">{value}</div>
       <div className="text-xs text-stone-500">{label}</div>
     </div>
+  )
+}
+
+function InfoCard({
+  icon,
+  label,
+  value,
+  link,
+  linkLabel,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: number
+  link: string
+  linkLabel: string
+}) {
+  return (
+    <Link to={link} className="card flex items-center gap-3 hover:bg-stone-50 transition-colors">
+      <div className="flex-shrink-0">{icon}</div>
+      <div className="min-w-0">
+        <div className="text-xl font-bold text-stone-900">{value}</div>
+        <div className="text-xs text-stone-500 truncate">{label}</div>
+        <div className="text-xs font-medium text-komora-600 mt-0.5">{linkLabel}</div>
+      </div>
+    </Link>
   )
 }

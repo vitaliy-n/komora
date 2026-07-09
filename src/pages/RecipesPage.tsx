@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useDatabase } from '../hooks/useDatabase'
 import { SearchBar } from '../components/common/SearchBar'
+import { FilterChips } from '../components/common/FilterChips'
 import { EmptyState } from '../components/common/EmptyState'
 import { Badge } from '../components/ui/Badge'
 import type { Recipe, Category, Product } from '../types'
@@ -34,6 +35,11 @@ export function RecipesPage() {
     .filter((p) => usedProductIds.includes(p.id))
     .sort((a, b) => a.name.localeCompare(b.name, 'uk'))
 
+  const categoryCounts = recipes.reduce<Record<string, number>>((acc, r) => {
+    acc[r.categoryId] = (acc[r.categoryId] || 0) + 1
+    return acc
+  }, {})
+
   const filtered = recipes.filter((r) => {
     if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return false
     if (filterCategory && r.categoryId !== filterCategory) return false
@@ -52,28 +58,22 @@ export function RecipesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="page-title">Рецепти</h1>
-        <Badge variant="info">{recipes.length} рецептів</Badge>
+        <Badge variant="info">{filtered.length} / {recipes.length}</Badge>
       </div>
 
       <SearchBar value={search} onChange={setSearch} placeholder="Шукати рецепти..." />
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        <button
-          onClick={() => setFilterCategory('')}
-          className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${!filterCategory ? 'bg-komora-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
-        >
-          Всі
-        </button>
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setFilterCategory(cat.id === filterCategory ? '' : cat.id)}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${filterCategory === cat.id ? 'bg-komora-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
-          >
-            {cat.icon} {cat.name}
-          </button>
-        ))}
-      </div>
+      <FilterChips
+        chips={categories.map((cat) => ({
+          value: cat.id,
+          label: cat.name,
+          icon: cat.icon,
+          count: categoryCounts[cat.id] || 0,
+        }))}
+        selected={filterCategory}
+        onSelect={setFilterCategory}
+        allLabel="Всі категорії"
+      />
 
       <div className="flex gap-2 flex-wrap">
         {(['easy', 'medium', 'hard'] as const).map((d) => (

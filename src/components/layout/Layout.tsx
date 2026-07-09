@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, Cookie, BookOpen, Apple, Package, Settings } from 'lucide-react'
+import { LayoutDashboard, Cookie, BookOpen, Apple, Package, Settings, Calendar } from 'lucide-react'
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Головна' },
@@ -7,6 +7,7 @@ const navItems = [
   { to: '/recipes', icon: BookOpen, label: 'Рецепти' },
   { to: '/products', icon: Apple, label: 'Продукти' },
   { to: '/inventory', icon: Package, label: 'Запаси' },
+  { to: '/calendar', icon: Calendar, label: 'Календар' },
 ]
 
 export function Layout() {
