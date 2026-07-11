@@ -83,21 +83,21 @@ export function DashboardPage() {
           icon={<Package size={20} className="text-komora-600" />}
           label="Продуктів у базі"
           value={products?.length ?? 0}
-          link="/products"
+          link="/app/products"
           linkLabel="Каталог →"
         />
         <InfoCard
           icon={<BookOpen size={20} className="text-komora-600" />}
           label="Рецептів"
           value={recipes?.length ?? 0}
-          link="/recipes"
+          link="/app/recipes"
           linkLabel="Рецепти →"
         />
         <InfoCard
           icon={<Leaf size={20} className="text-komora-600" />}
           label="Сезонних продуктів"
           value={seasonalProducts.length}
-          link="/calendar"
+          link="/app/calendar"
           linkLabel="Календар →"
         />
       </div>
@@ -113,7 +113,7 @@ export function DashboardPage() {
             {alerts.slice(0, 5).map((alert) => (
               <Link
                 key={alert.id}
-                to={alert.type === 'canning' ? `/cannings/${alert.id}` : '/inventory'}
+                to={alert.type === 'canning' ? `/app/cannings/${alert.id}` : '/app/inventory'}
                 className="flex items-center justify-between p-2 rounded-xl hover:bg-amber-100/50 transition-colors"
               >
                 <div>
@@ -143,7 +143,7 @@ export function DashboardPage() {
                 return (
                   <Link
                     key={catId}
-                    to={`/cannings?category=${catId}`}
+                    to={`/app/cannings?category=${catId}`}
                     className="flex items-center gap-2 p-3 rounded-xl bg-stone-50 hover:bg-stone-100 transition-colors"
                   >
                     <span className="text-xl">{cat?.icon || '📦'}</span>

@@ -1,5 +1,6 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, Cookie, BookOpen, Apple, Package, Settings, Calendar } from 'lucide-react'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { LayoutDashboard, Cookie, BookOpen, Apple, Package, Settings, Calendar, LogOut, User, BarChart3, ShoppingCart } from 'lucide-react'
+import { useAuth } from '../../lib/useAuth'
 
 const navItems = [
   { to: '/app', icon: LayoutDashboard, label: 'Головна' },
@@ -8,9 +9,19 @@ const navItems = [
   { to: '/app/products', icon: Apple, label: 'Продукти' },
   { to: '/app/inventory', icon: Package, label: 'Запаси' },
   { to: '/app/calendar', icon: Calendar, label: 'Календар' },
+  { to: '/app/shopping', icon: ShoppingCart, label: 'Покупки' },
+  { to: '/app/stats', icon: BarChart3, label: 'Статистика' },
 ]
 
 export function Layout() {
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-white border-b border-stone-200 px-4 py-3 hidden sm:block">
@@ -24,7 +35,7 @@ export function Layout() {
               <NavLink
                 key={to}
                 to={to}
-                end={to === '/'}
+                end={to === '/app'}
                 className={({ isActive }) =>
                   `flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                     isActive
@@ -45,6 +56,21 @@ export function Layout() {
             >
               <Settings size={18} />
             </NavLink>
+            {user && (
+              <div className="flex items-center gap-2 ml-2 pl-2 border-l border-stone-200">
+                <div className="flex items-center gap-1.5 text-sm text-stone-600">
+                  <User size={16} />
+                  <span className="font-medium">{user.username}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-xl text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                  title="Вийти"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            )}
           </nav>
         </div>
       </header>
@@ -61,7 +87,7 @@ export function Layout() {
             <NavLink
               key={to}
               to={to}
-              end={to === '/'}
+              end={to === '/app'}
               className={({ isActive }) =>
                 `flex flex-col items-center gap-0.5 py-2 px-3 text-[11px] font-medium transition-colors ${
                   isActive ? 'text-komora-600' : 'text-stone-400'

@@ -1,15 +1,33 @@
-import { useState } from 'react'
-import { Download, Upload, Trash2, Bell } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Download, Upload, Trash2, Bell, Moon, Sun } from 'lucide-react'
 import { useNotifications } from '../hooks/useNotifications'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { db } from '../db/database'
+import { useToast } from '../components/ui/Toast'
 
 export function SettingsPage() {
   const { requestPermission } = useNotifications()
+  const { show } = useToast()
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [notifStatus, setNotifStatus] = useState<string>('')
   const [exportStatus, setExportStatus] = useState('')
+  const [darkMode, setDarkMode] = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('komora_dark')
+    if (stored === 'true' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      setDarkMode(true)
+      document.documentElement.classList.add('dark')
+    }
+  }, [])
+
+  const toggleDarkMode = () => {
+    const newValue = !darkMode
+    setDarkMode(newValue)
+    localStorage.setItem('komora_dark', String(newValue))
+    document.documentElement.classList.toggle('dark', newValue)
+  }
 
   const handleEnableNotifications = async () => {
     const granted = await requestPermission()
@@ -34,6 +52,7 @@ export function SettingsPage() {
     a.click()
     URL.revokeObjectURL(url)
     setExportStatus('Експорт завершено!')
+    show('Експорт завершено!', 'success')
     setTimeout(() => setExportStatus(''), 3000)
   }
 
@@ -48,9 +67,11 @@ export function SettingsPage() {
       if (data.inventory) await db.inventory.bulkPut(data.inventory)
       if (data.categories) await db.categories.bulkPut(data.categories)
       setExportStatus('Імпорт завершено! Оновіть сторінку.')
+      show('Імпорт завершено!', 'success')
       setTimeout(() => setExportStatus(''), 5000)
     } catch {
       setExportStatus('Помилка імпорту: невірний формат файлу')
+      show('Помилка імпорту', 'error')
       setTimeout(() => setExportStatus(''), 5000)
     }
   }
@@ -67,6 +88,20 @@ export function SettingsPage() {
   return (
     <div className="space-y-4">
       <h1 className="page-title">Налаштування</h1>
+
+      <div className="card space-y-4">
+        <h2 className="font-semibold">Тема</h2>
+        <button
+          onClick={toggleDarkMode}
+          className="flex items-center gap-3 w-full p-3 rounded-xl bg-stone-50 dark:bg-stone-700 hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors"
+        >
+          {darkMode ? <Moon size={20} className="text-komora-600" /> : <Sun size={20} className="text-komora-600" />}
+          <div className="flex-1 text-left">
+            <div className="font-medium">{darkMode ? 'Темна тема' : 'Світла тема'}</div>
+            <div className="text-sm text-stone-500">{darkMode ? 'Натисніть для світлої теми' : 'Натисніть для темної теми'}</div>
+          </div>
+        </button>
+      </div>
 
       <div className="card space-y-4">
         <h2 className="font-semibold">Нотифікації</h2>

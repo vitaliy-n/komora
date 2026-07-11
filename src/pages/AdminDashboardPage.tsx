@@ -170,6 +170,19 @@ export function AdminDashboardPage() {
               </div>
               <Plus size={20} className="text-stone-400" />
             </Link>
+            <Link
+              to="/admin/users"
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-stone-50 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-komora-50 flex items-center justify-center">
+                <Users size={20} className="text-komora-600" />
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-stone-800">Користувачі</div>
+                <div className="text-sm text-stone-500">Управляйте користувачами та їх ролями</div>
+              </div>
+              <Plus size={20} className="text-stone-400" />
+            </Link>
           </div>
         </section>
 

@@ -12,14 +12,20 @@ export function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
-              to="/app"
+              to="/auth"
               className="text-sm font-medium text-stone-600 hover:text-komora-700 transition-colors"
             >
-              Відкрити додаток
+              Увійти
+            </Link>
+            <Link
+              to="/auth"
+              className="text-sm font-medium px-4 py-2 rounded-xl bg-komora-600 text-white hover:bg-komora-700 transition-colors"
+            >
+              Зареєструватись
             </Link>
             <Link
               to="/admin"
-              className="text-sm font-medium px-4 py-2 rounded-xl bg-komora-600 text-white hover:bg-komora-700 transition-colors"
+              className="text-sm font-medium px-4 py-2 rounded-xl bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 transition-colors"
             >
               Адмін
             </Link>
@@ -38,16 +44,16 @@ export function LandingPage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            to="/app"
+            to="/auth"
             className="px-6 py-3 rounded-xl bg-komora-600 text-white font-semibold hover:bg-komora-700 transition-colors"
           >
             Почати користуватись
           </Link>
           <Link
-            to="/admin"
+            to="/auth"
             className="px-6 py-3 rounded-xl bg-white border border-stone-300 text-stone-700 font-semibold hover:bg-stone-50 transition-colors"
           >
-            Панель адміністратора
+            Увійти / Зареєструватись
           </Link>
         </div>
       </section>

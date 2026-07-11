@@ -124,7 +124,7 @@ export function CalendarPage() {
                   {items.map(product => (
                     <div 
                       key={product.id}
-                      onClick={() => navigate(`/products/${product.id}`)}
+                      onClick={() => navigate(`/app/products/${product.id}`)}
                       className="flex items-center gap-3 p-3 rounded-xl border border-stone-100 bg-stone-50 hover:bg-stone-100 hover:border-stone-200 transition-all cursor-pointer cursor-pointer"
                     >
                       <span className="text-2xl">{product.icon}</span>

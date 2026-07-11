@@ -7,6 +7,7 @@ export class KomoraDB extends Dexie {
   products!: Table<Product, string>
   inventory!: Table<InventoryItem, string>
   categories!: Table<Category, string>
+  shoppingItems!: Table<any, string>
 
   constructor() {
     super('komora')
@@ -16,6 +17,14 @@ export class KomoraDB extends Dexie {
       products: 'id, name, category, isBuiltIn, *seasonMonths',
       inventory: 'id, productId, storageMethod, purchaseDate, expiryDate',
       categories: 'id, name, isBuiltIn',
+    })
+    this.version(2).stores({
+      canningEntries: 'id, name, categoryId, recipeId, date, expiryDate, storageLocation, *tags',
+      recipes: 'id, name, categoryId, difficulty, isBuiltIn, *productIds',
+      products: 'id, name, category, isBuiltIn, *seasonMonths',
+      inventory: 'id, productId, storageMethod, purchaseDate, expiryDate',
+      categories: 'id, name, isBuiltIn',
+      shoppingItems: 'id, name, checked',
     })
   }
 }

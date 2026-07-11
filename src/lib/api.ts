@@ -1,15 +1,15 @@
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 
 function getToken(): string | null {
-  return localStorage.getItem('komora_admin_token')
+  return localStorage.getItem('komora_token')
 }
 
 export function setToken(token: string) {
-  localStorage.setItem('komora_admin_token', token)
+  localStorage.setItem('komora_token', token)
 }
 
 export function clearToken() {
-  localStorage.removeItem('komora_admin_token')
+  localStorage.removeItem('komora_token')
 }
 
 export function isAuthenticated(): boolean {
@@ -33,14 +33,27 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   return res.json()
 }
 
+export interface AuthUser {
+  id: number
+  username: string
+  email?: string
+  role: string
+}
+
 export const api = {
+  register: (username: string, email: string, password: string) =>
+    request<{ token: string; user: AuthUser }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ username, email, password }),
+    }),
+
   login: (username: string, password: string) =>
-    request<{ token: string; user: { id: number; username: string; role: string } }>('/auth/login', {
+    request<{ token: string; user: AuthUser }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     }),
 
-  getMe: () => request<{ user: { id: number; username: string; role: string } }>('/auth/me'),
+  getMe: () => request<{ user: AuthUser }>('/auth/me'),
 
   changePassword: (currentPassword: string, newPassword: string) =>
     request<{ success: boolean }>('/auth/change-password', {
@@ -48,7 +61,7 @@ export const api = {
       body: JSON.stringify({ currentPassword, newPassword }),
     }),
 
-  getStats: () => request<{ products: number; recipes: number; users: number }>('/stats'),
+  getStats: () => request<{ products: number; recipes: number; users: number; canningCount: number; inventoryCount: number }>('/stats'),
 
   getProducts: () => request<any[]>('/products'),
 
@@ -83,4 +96,51 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ recipes }),
     }),
+
+  getCannings: () => request<any[]>('/cannings'),
+
+  saveCanning: (canning: any) =>
+    request<{ success: boolean }>('/cannings', {
+      method: 'POST',
+      body: JSON.stringify(canning),
+    }),
+
+  bulkCannings: (items: any[]) =>
+    request<{ success: boolean; count: number }>('/cannings/bulk', {
+      method: 'POST',
+      body: JSON.stringify({ items }),
+    }),
+
+  deleteCanning: (id: string) =>
+    request<{ success: boolean }>(`/cannings/${id}`, { method: 'DELETE' }),
+
+  getInventory: () => request<any[]>('/inventory'),
+
+  saveInventory: (item: any) =>
+    request<{ success: boolean }>('/inventory', {
+      method: 'POST',
+      body: JSON.stringify(item),
+    }),
+
+  bulkInventory: (items: any[]) =>
+    request<{ success: boolean; count: number }>('/inventory/bulk', {
+      method: 'POST',
+      body: JSON.stringify({ items }),
+    }),
+
+  deleteInventory: (id: string) =>
+    request<{ success: boolean }>(`/inventory/${id}`, { method: 'DELETE' }),
+
+  getAdminUsers: () => request<any[]>('/admin/users'),
+
+  updateAdminUser: (id: number, role: string) =>
+    request<{ success: boolean }>(`/admin/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    }),
+
+  deleteAdminUser: (id: number) =>
+    request<{ success: boolean }>(`/admin/users/${id}`, { method: 'DELETE' }),
+
+  getAdminStats: () => request<any>('/admin/stats'),
 }
