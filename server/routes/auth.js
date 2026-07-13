@@ -15,6 +15,7 @@ const authLimiter = rateLimit({
   message: { error: 'Занадто багато спроб. Спробуйте через хвилину.' },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
 })
 
 router.post('/register', authLimiter, validateBody(registerSchema), (req, res) => {
@@ -25,14 +26,23 @@ router.post('/register', authLimiter, validateBody(registerSchema), (req, res) =
     return res.status(409).json({ error: 'Користувач з таким логіном вже існує' })
   }
   if (email) {
-    const existingEmail = db.prepare('SELECT id FROM users WHERE email = ?').get(email)
-    if (existingEmail) {
-      return res.status(409).json({ error: 'Email вже використовується' })
+    try {
+      const existingEmail = db.prepare('SELECT id FROM users WHERE email = ?').get(email)
+      if (existingEmail) {
+        return res.status(409).json({ error: 'Email вже використовується' })
+      }
+    } catch (e) {
+      // email column may not exist
     }
   }
 
   const hash = bcrypt.hashSync(password, 10)
-  const result = db.prepare('INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)').run(username, email || null, hash, 'user')
+  let result
+  try {
+    result = db.prepare('INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)').run(username, email || null, hash, 'user')
+  } catch (e) {
+    result = db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)').run(username, hash, 'user')
+  }
   const user = { id: result.lastInsertRowid, username, role: 'user' }
   const token = signAccessToken(user)
   const refreshToken = signRefreshToken(user)
@@ -63,7 +73,7 @@ router.post('/login', authLimiter, validateBody(loginSchema), (req, res) => {
     new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   )
 
-  res.json({ token, refreshToken, user: { id: user.id, username: user.username, email: user.email, role: user.role } })
+  res.json({ token, refreshToken, user: { id: user.id, username: user.username, email: user.email || null, role: user.role } })
 })
 
 router.post('/refresh', validateBody(refreshTokenSchema), (req, res) => {
@@ -76,7 +86,12 @@ router.post('/refresh', validateBody(refreshTokenSchema), (req, res) => {
       return res.status(401).json({ error: 'Недійсний refresh токен' })
     }
 
-    const user = db.prepare('SELECT id, username, email, role FROM users WHERE id = ?').get(decoded.id)
+    let user
+  try {
+    user = db.prepare('SELECT id, username, email, role FROM users WHERE id = ?').get(decoded.id)
+  } catch (e) {
+    user = db.prepare('SELECT id, username, role FROM users WHERE id = ?').get(decoded.id)
+  }
     if (!user) {
       return res.status(401).json({ error: 'Користувача не знайдено' })
     }
@@ -94,7 +109,12 @@ router.post('/logout', authMiddleware, (req, res) => {
 })
 
 router.get('/me', authMiddleware, (req, res) => {
-  const user = db.prepare('SELECT id, username, email, role, created_at FROM users WHERE id = ?').get(req.user.id)
+  let user
+  try {
+    user = db.prepare('SELECT id, username, email, role, created_at FROM users WHERE id = ?').get(req.user.id)
+  } catch (e) {
+    user = db.prepare('SELECT id, username, role, created_at FROM users WHERE id = ?').get(req.user.id)
+  }
   if (!user) return res.status(404).json({ error: 'Користувача не знайдено' })
   res.json({ user })
 })

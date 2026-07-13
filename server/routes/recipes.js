@@ -7,36 +7,41 @@ import { recipeSchema, recipeBulkSchema, paginationSchema } from '../schemas/rec
 const router = Router()
 
 router.get('/', authMiddleware, validateQuery(paginationSchema), (req, res) => {
-  const { page, limit, search, categoryId } = req.query
-  const offset = (page - 1) * limit
+  try {
+    const { page, limit, search, categoryId } = res.locals.query
+    const offset = (page - 1) * limit
 
-  let query = 'SELECT id, name, category_id, data FROM recipes'
-  let countQuery = 'SELECT COUNT(*) as total FROM recipes'
-  const conditions = []
-  const params = []
+    let query = 'SELECT id, name, category_id, data FROM recipes'
+    let countQuery = 'SELECT COUNT(*) as total FROM recipes'
+    const conditions = []
+    const params = []
 
-  if (search) {
-    conditions.push('name LIKE ?')
-    params.push(`%${search}%`)
+    if (search) {
+      conditions.push('name LIKE ?')
+      params.push(`%${search}%`)
+    }
+    if (categoryId) {
+      conditions.push('category_id = ?')
+      params.push(categoryId)
+    }
+
+    if (conditions.length > 0) {
+      const where = ' WHERE ' + conditions.join(' AND ')
+      query += where
+      countQuery += where
+    }
+
+    query += ' ORDER BY name LIMIT ? OFFSET ?'
+
+    const total = db.prepare(countQuery).get(...params).total
+    const rows = db.prepare(query).all(...params, limit, offset)
+    const items = rows.map(r => ({ ...JSON.parse(r.data), id: r.id, name: r.name, categoryId: r.category_id }))
+
+    res.json({ items, total, page, limit })
+  } catch (err) {
+    console.error('Recipes GET error:', err)
+    res.status(500).json({ error: err.message })
   }
-  if (categoryId) {
-    conditions.push('category_id = ?')
-    params.push(categoryId)
-  }
-
-  if (conditions.length > 0) {
-    const where = ' WHERE ' + conditions.join(' AND ')
-    query += where
-    countQuery += where
-  }
-
-  query += ' ORDER BY name LIMIT ? OFFSET ?'
-
-  const total = db.prepare(countQuery).get(...params).total
-  const rows = db.prepare(query).all(...params, limit, offset)
-  const items = rows.map(r => ({ ...JSON.parse(r.data), id: r.id, name: r.name, categoryId: r.category_id }))
-
-  res.json({ items, total, page, limit })
 })
 
 router.post('/', authMiddleware, validateBody(recipeSchema), (req, res) => {

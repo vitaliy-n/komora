@@ -7,7 +7,7 @@ import { productSchema, productBulkSchema, paginationSchema } from '../schemas/p
 const router = Router()
 
 router.get('/', authMiddleware, validateQuery(paginationSchema), (req, res) => {
-  const { page, limit, search, category } = req.query
+  const { page, limit, search, category } = res.locals.query
   const offset = (page - 1) * limit
 
   let query = 'SELECT id, name, category, icon, data FROM products'

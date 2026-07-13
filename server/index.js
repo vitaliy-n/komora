@@ -56,6 +56,11 @@ app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'))
 })
 
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.stack || err)
+  res.status(500).json({ error: 'Внутрішня помилка сервера', message: err.message })
+})
+
 app.listen(PORT, () => {
   console.log(`Komora server running on http://localhost:${PORT}`)
 })
