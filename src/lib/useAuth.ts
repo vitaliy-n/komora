@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { api, setToken, clearToken, isAuthenticated, type AuthUser } from './api'
+import { api, setToken, setRefreshToken, clearToken, isAuthenticated, type AuthUser } from './api'
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null)
@@ -22,6 +22,7 @@ export function useAuth() {
   const login = useCallback(async (username: string, password: string) => {
     const res = await api.login(username, password)
     setToken(res.token)
+    setRefreshToken(res.refreshToken)
     setUser(res.user)
     return res.user
   }, [])
@@ -29,11 +30,13 @@ export function useAuth() {
   const register = useCallback(async (username: string, email: string, password: string) => {
     const res = await api.register(username, email, password)
     setToken(res.token)
+    setRefreshToken(res.refreshToken)
     setUser(res.user)
     return res.user
   }, [])
 
   const logout = useCallback(() => {
+    api.logout().catch(() => {})
     clearToken()
     setUser(null)
   }, [])

@@ -26,6 +26,13 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ defa
 const CalendarPage = lazy(() => import('./pages/CalendarPage').then(m => ({ default: m.CalendarPage })))
 const StatsPage = lazy(() => import('./pages/StatsPage').then(m => ({ default: m.StatsPage })))
 const ShoppingListPage = lazy(() => import('./pages/ShoppingListPage').then(m => ({ default: m.ShoppingListPage })))
+const LabelsPage = lazy(() => import('./pages/LabelsPage').then(m => ({ default: m.LabelsPage })))
+const QRScannerPage = lazy(() => import('./pages/QRScannerPage').then(m => ({ default: m.QRScannerPage })))
+const PantryChefPage = lazy(() => import('./pages/PantryChefPage').then(m => ({ default: m.PantryChefPage })))
+const StorageMapPage = lazy(() => import('./pages/StorageMapPage').then(m => ({ default: m.StorageMapPage })))
+const ExportReportsPage = lazy(() => import('./pages/ExportReportsPage').then(m => ({ default: m.ExportReportsPage })))
+const ImportRecipePage = lazy(() => import('./pages/ImportRecipePage').then(m => ({ default: m.ImportRecipePage })))
+const GuidesPage = lazy(() => import('./pages/GuidesPage').then(m => ({ default: m.GuidesPage })))
 
 function Loading() {
   return <div className="flex justify-center items-center min-h-screen">
@@ -74,6 +81,13 @@ export default function App() {
                 <Route path="/app/calendar" element={<CalendarPage />} />
                 <Route path="/app/stats" element={<StatsPage />} />
                 <Route path="/app/shopping" element={<ShoppingListPage />} />
+                <Route path="/app/labels" element={<LabelsPage />} />
+                <Route path="/app/scan" element={<QRScannerPage />} />
+                <Route path="/app/chef" element={<PantryChefPage />} />
+                <Route path="/app/storage-map" element={<StorageMapPage />} />
+                <Route path="/app/export" element={<ExportReportsPage />} />
+                <Route path="/app/recipes/import" element={<ImportRecipePage />} />
+                <Route path="/app/guides" element={<GuidesPage />} />
                 <Route path="/app/settings" element={<SettingsPage />} />
               </Route>
             </Routes>

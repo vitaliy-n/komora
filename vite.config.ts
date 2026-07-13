@@ -17,6 +17,11 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait-primary',
         start_url: '/app',
+        shortcuts: [
+          { name: 'Нова закрутка', url: '/app/cannings/new', icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }] },
+          { name: 'Список покупок', url: '/app/shopping', icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }] },
+          { name: 'Сканер QR', url: '/app/scan', icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }] },
+        ],
         icons: [
           {
             src: 'pwa-192x192.png',

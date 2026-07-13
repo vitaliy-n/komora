@@ -2,18 +2,9 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Users, Trash2, User as UserIcon } from 'lucide-react'
 import { api } from '../lib/api'
+import type { AdminUser } from '../types/api'
 import { Modal } from '../components/ui/Modal'
 import { Button } from '../components/ui/Button'
-
-interface AdminUser {
-  id: number
-  username: string
-  email: string | null
-  role: string
-  created_at: string
-  canningCount: number
-  inventoryCount: number
-}
 
 export function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([])

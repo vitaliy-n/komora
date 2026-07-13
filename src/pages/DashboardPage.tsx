@@ -63,7 +63,7 @@ export function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="page-title">🫙 Комора</h1>
-          <p className="text-stone-500 text-sm mt-1">Ваші домашні закрутки та запаси</p>
+          <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Ваші домашні закрутки та запаси</p>
         </div>
         <Link to="/app/cannings/new" className="btn-primary flex items-center gap-2">
           <Plus size={18} />
@@ -103,10 +103,10 @@ export function DashboardPage() {
       </div>
 
       {alerts.length > 0 && (
-        <div className="card border-amber-200 bg-amber-50/50">
+        <div className="card border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/20">
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle size={18} className="text-amber-600" />
-            <h2 className="font-semibold text-amber-800">Потребують уваги</h2>
+            <AlertTriangle size={18} className="text-amber-600 dark:text-amber-400" />
+            <h2 className="font-semibold text-amber-800 dark:text-amber-300">Потребують уваги</h2>
             <Badge variant="warning">{alerts.length}</Badge>
           </div>
           <div className="space-y-2">
@@ -114,11 +114,11 @@ export function DashboardPage() {
               <Link
                 key={alert.id}
                 to={alert.type === 'canning' ? `/app/cannings/${alert.id}` : '/app/inventory'}
-                className="flex items-center justify-between p-2 rounded-xl hover:bg-amber-100/50 transition-colors"
+                className="flex items-center justify-between p-2 rounded-xl hover:bg-amber-100/50 dark:hover:bg-amber-900/30 transition-colors"
               >
                 <div>
-                  <span className="text-sm font-medium text-stone-800">{alert.name}</span>
-                  <span className="text-xs text-stone-500 ml-2">{formatDate(alert.expiryDate)}</span>
+                  <span className="text-sm font-medium text-stone-800 dark:text-stone-200">{alert.name}</span>
+                  <span className="text-xs text-stone-500 dark:text-stone-400 ml-2">{formatDate(alert.expiryDate)}</span>
                 </div>
                 <Badge variant={alert.status === 'expired' ? 'danger' : alert.status === 'danger' ? 'danger' : 'warning'}>
                   {alert.status === 'expired' ? 'Прострочено' : `${alert.daysLeft} дн.`}
@@ -133,7 +133,7 @@ export function DashboardPage() {
         <div className="card">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp size={18} className="text-komora-600" />
-            <h2 className="font-semibold">По категоріях</h2>
+            <h2 className="font-semibold dark:text-stone-200">По категоріях</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {Object.entries(categoryCounts)
@@ -144,12 +144,12 @@ export function DashboardPage() {
                   <Link
                     key={catId}
                     to={`/app/cannings?category=${catId}`}
-                    className="flex items-center gap-2 p-3 rounded-xl bg-stone-50 hover:bg-stone-100 transition-colors"
+                    className="flex items-center gap-2 p-3 rounded-xl bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
                   >
                     <span className="text-xl">{cat?.icon || '📦'}</span>
                     <div>
-                      <div className="text-sm font-medium text-stone-800">{cat?.name || 'Інше'}</div>
-                      <div className="text-xs text-stone-500">{count} банок</div>
+                      <div className="text-sm font-medium text-stone-800 dark:text-stone-200">{cat?.name || 'Інше'}</div>
+                      <div className="text-xs text-stone-500 dark:text-stone-400">{count} банок</div>
                     </div>
                   </Link>
                 )
@@ -162,7 +162,7 @@ export function DashboardPage() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Calendar size={18} className="text-komora-600" />
-            <h2 className="font-semibold">Сезонні продукти — {getMonthName(currentMonth)}</h2>
+            <h2 className="font-semibold dark:text-stone-200">Сезонні продукти — {getMonthName(currentMonth)}</h2>
           </div>
           <Link to="/app/calendar" className="text-sm font-medium text-komora-600 hover:text-komora-700">
             Усі →
@@ -172,24 +172,24 @@ export function DashboardPage() {
           <div className="space-y-4">
             {topSeasonalCategories.map(([category, items]) => (
               <div key={category}>
-                <div className="text-xs font-medium text-stone-400 mb-2">
-                  {category} <span className="text-stone-300">({items.length})</span>
+                <div className="text-xs font-medium text-stone-400 dark:text-stone-500 mb-2">
+                  {category} <span className="text-stone-300 dark:text-stone-600">({items.length})</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {items.slice(0, 10).map((p) => (
                     <Link
                       key={p.id}
                       to={`/app/products/${p.id}`}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-stone-50 hover:bg-stone-100 transition-colors"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-stone-50 dark:bg-stone-700/50 hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
                     >
                       <span className="text-base">{p.icon}</span>
-                      <span className="text-xs font-medium text-stone-700">{p.name}</span>
+                      <span className="text-xs font-medium text-stone-700 dark:text-stone-300">{p.name}</span>
                     </Link>
                   ))}
                   {items.length > 10 && (
                     <Link
                       to="/app/calendar"
-                      className="flex items-center px-2.5 py-1.5 rounded-lg bg-komora-50 hover:bg-komora-100 transition-colors text-xs font-medium text-komora-700"
+                      className="flex items-center px-2.5 py-1.5 rounded-lg bg-komora-50 dark:bg-komora-900/30 hover:bg-komora-100 dark:hover:bg-komora-900/50 transition-colors text-xs font-medium text-komora-700 dark:text-komora-400"
                     >
                       +{items.length - 10} ще
                     </Link>
@@ -199,16 +199,16 @@ export function DashboardPage() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-stone-500 dark:text-stone-400">
             Перегляньте <Link to="/app/calendar" className="text-komora-600 underline">сезонний календар</Link>, щоб дізнатися, що зараз найкраще консервувати.
           </p>
         )}
       </div>
 
       {!hasUserData && (
-        <div className="card bg-komora-50/50 border-komora-200">
-          <h2 className="font-semibold text-komora-800 mb-2">👋 Ласкаво просимо!</h2>
-          <p className="text-sm text-stone-600 mb-3">
+        <div className="card bg-komora-50/50 dark:bg-komora-900/20 border-komora-200 dark:border-komora-800">
+          <h2 className="font-semibold text-komora-800 dark:text-komora-300 mb-2">👋 Ласкаво просимо!</h2>
+          <p className="text-sm text-stone-600 dark:text-stone-400 mb-3">
             Це ваша цифрова комора. Додавайте закрутки, ведіть інвентар продуктів, використовуйте рецепти та сезонний календар.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -232,8 +232,8 @@ function StatCard({ icon, label, value }: { icon: string; label: string; value: 
   return (
     <div className="card text-center">
       <div className="text-2xl mb-1">{icon}</div>
-      <div className="text-2xl font-bold text-stone-900">{value}</div>
-      <div className="text-xs text-stone-500">{label}</div>
+      <div className="text-2xl font-bold text-stone-900 dark:text-stone-100">{value}</div>
+      <div className="text-xs text-stone-500 dark:text-stone-400">{label}</div>
     </div>
   )
 }
@@ -252,11 +252,11 @@ function InfoCard({
   linkLabel: string
 }) {
   return (
-    <Link to={link} className="card flex items-center gap-3 hover:bg-stone-50 transition-colors">
+    <Link to={link} className="card flex items-center gap-3 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors">
       <div className="flex-shrink-0">{icon}</div>
       <div className="min-w-0">
-        <div className="text-xl font-bold text-stone-900">{value}</div>
-        <div className="text-xs text-stone-500 truncate">{label}</div>
+        <div className="text-xl font-bold text-stone-900 dark:text-stone-100">{value}</div>
+        <div className="text-xs text-stone-500 dark:text-stone-400 truncate">{label}</div>
         <div className="text-xs font-medium text-komora-600 mt-0.5">{linkLabel}</div>
       </div>
     </Link>

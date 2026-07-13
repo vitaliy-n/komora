@@ -1,19 +1,71 @@
+import type {
+  AuthUser,
+  AuthResponse,
+  PaginatedResponse,
+  ApiProduct,
+  ApiRecipe,
+  ApiCanning,
+  ApiInventoryItem,
+  AdminStats,
+  AdminUser,
+  StatsResponse,
+} from '../types/api'
+import type { Product, Recipe, CanningEntry, InventoryItem } from '../types'
+
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 
 function getToken(): string | null {
   return localStorage.getItem('komora_token')
 }
 
+function getRefreshToken(): string | null {
+  return localStorage.getItem('komora_refresh_token')
+}
+
 export function setToken(token: string) {
   localStorage.setItem('komora_token', token)
 }
 
+export function setRefreshToken(token: string) {
+  localStorage.setItem('komora_refresh_token', token)
+}
+
 export function clearToken() {
   localStorage.removeItem('komora_token')
+  localStorage.removeItem('komora_refresh_token')
 }
 
 export function isAuthenticated(): boolean {
   return !!getToken()
+}
+
+let isRefreshing = false
+let refreshPromise: Promise<string | null> | null = null
+
+async function tryRefreshToken(): Promise<string | null> {
+  if (isRefreshing && refreshPromise) return refreshPromise
+  isRefreshing = true
+  refreshPromise = (async () => {
+    const refreshToken = getRefreshToken()
+    if (!refreshToken) return null
+    try {
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      })
+      if (!res.ok) return null
+      const data = await res.json()
+      setToken(data.token)
+      return data.token
+    } catch {
+      return null
+    } finally {
+      isRefreshing = false
+      refreshPromise = null
+    }
+  })()
+  return refreshPromise
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -26,6 +78,22 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Authorization'] = `Bearer ${token}`
   }
   const res = await fetch(`${API_URL}${endpoint}`, { ...options, headers })
+
+  if (res.status === 401 && !endpoint.includes('/auth/')) {
+    const newToken = await tryRefreshToken()
+    if (newToken) {
+      headers['Authorization'] = `Bearer ${newToken}`
+      const retryRes = await fetch(`${API_URL}${endpoint}`, { ...options, headers })
+      if (!retryRes.ok) {
+        const data = await retryRes.json().catch(() => ({ error: 'Помилка запиту' }))
+        throw new Error(data.error || `HTTP ${retryRes.status}`)
+      }
+      return retryRes.json()
+    }
+    clearToken()
+    throw new Error('Сесія закінчилась. Увійдіть знову.')
+  }
+
   if (!res.ok) {
     const data = await res.json().catch(() => ({ error: 'Помилка запиту' }))
     throw new Error(data.error || `HTTP ${res.status}`)
@@ -33,25 +101,23 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   return res.json()
 }
 
-export interface AuthUser {
-  id: number
-  username: string
-  email?: string
-  role: string
-}
+export type { AuthUser }
 
 export const api = {
   register: (username: string, email: string, password: string) =>
-    request<{ token: string; user: AuthUser }>('/auth/register', {
+    request<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ username, email, password }),
     }),
 
   login: (username: string, password: string) =>
-    request<{ token: string; user: AuthUser }>('/auth/login', {
+    request<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     }),
+
+  logout: () =>
+    request<{ success: boolean }>('/auth/logout', { method: 'POST' }),
 
   getMe: () => request<{ user: AuthUser }>('/auth/me'),
 
@@ -61,11 +127,18 @@ export const api = {
       body: JSON.stringify({ currentPassword, newPassword }),
     }),
 
-  getStats: () => request<{ products: number; recipes: number; users: number; canningCount: number; inventoryCount: number }>('/stats'),
+  getStats: () => request<StatsResponse>('/stats'),
 
-  getProducts: () => request<any[]>('/products'),
+  getProducts: (page?: number, limit?: number, search?: string) => {
+    const params = new URLSearchParams()
+    if (page) params.set('page', String(page))
+    if (limit) params.set('limit', String(limit))
+    if (search) params.set('search', search)
+    const query = params.toString() ? `?${params.toString()}` : ''
+    return request<PaginatedResponse<ApiProduct> | ApiProduct[]>(`/products${query}`)
+  },
 
-  saveProduct: (product: any) =>
+  saveProduct: (product: Product) =>
     request<{ success: boolean }>('/products', {
       method: 'POST',
       body: JSON.stringify(product),
@@ -74,15 +147,22 @@ export const api = {
   deleteProduct: (id: string) =>
     request<{ success: boolean }>(`/products/${id}`, { method: 'DELETE' }),
 
-  bulkProducts: (products: any[]) =>
+  bulkProducts: (products: Product[]) =>
     request<{ success: boolean; count: number }>('/products/bulk', {
       method: 'POST',
       body: JSON.stringify({ products }),
     }),
 
-  getRecipes: () => request<any[]>('/recipes'),
+  getRecipes: (page?: number, limit?: number, search?: string) => {
+    const params = new URLSearchParams()
+    if (page) params.set('page', String(page))
+    if (limit) params.set('limit', String(limit))
+    if (search) params.set('search', search)
+    const query = params.toString() ? `?${params.toString()}` : ''
+    return request<PaginatedResponse<ApiRecipe> | ApiRecipe[]>(`/recipes${query}`)
+  },
 
-  saveRecipe: (recipe: any) =>
+  saveRecipe: (recipe: Recipe) =>
     request<{ success: boolean }>('/recipes', {
       method: 'POST',
       body: JSON.stringify(recipe),
@@ -91,21 +171,21 @@ export const api = {
   deleteRecipe: (id: string) =>
     request<{ success: boolean }>(`/recipes/${id}`, { method: 'DELETE' }),
 
-  bulkRecipes: (recipes: any[]) =>
+  bulkRecipes: (recipes: Recipe[]) =>
     request<{ success: boolean; count: number }>('/recipes/bulk', {
       method: 'POST',
       body: JSON.stringify({ recipes }),
     }),
 
-  getCannings: () => request<any[]>('/cannings'),
+  getCannings: () => request<ApiCanning[]>('/cannings'),
 
-  saveCanning: (canning: any) =>
+  saveCanning: (canning: CanningEntry) =>
     request<{ success: boolean }>('/cannings', {
       method: 'POST',
       body: JSON.stringify(canning),
     }),
 
-  bulkCannings: (items: any[]) =>
+  bulkCannings: (items: CanningEntry[]) =>
     request<{ success: boolean; count: number }>('/cannings/bulk', {
       method: 'POST',
       body: JSON.stringify({ items }),
@@ -114,15 +194,15 @@ export const api = {
   deleteCanning: (id: string) =>
     request<{ success: boolean }>(`/cannings/${id}`, { method: 'DELETE' }),
 
-  getInventory: () => request<any[]>('/inventory'),
+  getInventory: () => request<ApiInventoryItem[]>('/inventory'),
 
-  saveInventory: (item: any) =>
+  saveInventory: (item: InventoryItem) =>
     request<{ success: boolean }>('/inventory', {
       method: 'POST',
       body: JSON.stringify(item),
     }),
 
-  bulkInventory: (items: any[]) =>
+  bulkInventory: (items: InventoryItem[]) =>
     request<{ success: boolean; count: number }>('/inventory/bulk', {
       method: 'POST',
       body: JSON.stringify({ items }),
@@ -131,7 +211,7 @@ export const api = {
   deleteInventory: (id: string) =>
     request<{ success: boolean }>(`/inventory/${id}`, { method: 'DELETE' }),
 
-  getAdminUsers: () => request<any[]>('/admin/users'),
+  getAdminUsers: () => request<AdminUser[]>('/admin/users'),
 
   updateAdminUser: (id: number, role: string) =>
     request<{ success: boolean }>(`/admin/users/${id}`, {
@@ -142,5 +222,5 @@ export const api = {
   deleteAdminUser: (id: number) =>
     request<{ success: boolean }>(`/admin/users/${id}`, { method: 'DELETE' }),
 
-  getAdminStats: () => request<any>('/admin/stats'),
+  getAdminStats: () => request<AdminStats>('/admin/stats'),
 }

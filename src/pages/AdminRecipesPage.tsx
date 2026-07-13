@@ -61,7 +61,8 @@ export function AdminRecipesPage() {
     setLoading(true)
     try {
       const data = await api.getRecipes()
-      setRecipes(data)
+      const items = Array.isArray(data) ? data : data.items
+      setRecipes(items)
     } catch {
       clearToken()
       navigate('/admin')

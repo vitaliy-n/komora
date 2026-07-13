@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Camera, X } from 'lucide-react'
 import { useDatabase } from '../hooks/useDatabase'
+import { compressImage } from '../hooks/useImageCompression'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import type { CanningEntry, Category, Recipe } from '../types'
@@ -62,16 +63,17 @@ export function CanningFormPage() {
     load()
   }, [id, getAllCategories, getAllRecipes, getCanningById])
 
-  const handlePhotoAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files) return
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader()
-      reader.onload = () => {
-        setForm((prev) => ({ ...prev, photos: [...prev.photos, reader.result as string] }))
+    for (const file of Array.from(files)) {
+      try {
+        const compressed = await compressImage(file, 1024, 0.8)
+        setForm((prev) => ({ ...prev, photos: [...prev.photos, compressed] }))
+      } catch (err) {
+        console.error('Failed to compress image:', err)
       }
-      reader.readAsDataURL(file)
-    })
+    }
   }
 
   const handlePhotoRemove = (index: number) => {

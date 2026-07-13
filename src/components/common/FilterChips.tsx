@@ -25,7 +25,7 @@ export function FilterChips({
       <button
         onClick={() => onSelect('')}
         className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-          !selected ? 'bg-komora-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+          !selected ? 'bg-komora-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-700 dark:text-stone-300 dark:hover:bg-stone-600'
         }`}
       >
         {allIcon && <span className="mr-1">{allIcon}</span>}
@@ -36,7 +36,7 @@ export function FilterChips({
           key={chip.value}
           onClick={() => onSelect(chip.value === selected ? '' : chip.value)}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-            selected === chip.value ? 'bg-komora-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+            selected === chip.value ? 'bg-komora-600 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-700 dark:text-stone-300 dark:hover:bg-stone-600'
           }`}
         >
           {chip.icon && <span className="mr-1">{chip.icon}</span>}
